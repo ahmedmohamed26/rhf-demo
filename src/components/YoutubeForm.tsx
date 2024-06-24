@@ -1,4 +1,4 @@
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, FieldErrors } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { useEffect } from "react";
 
@@ -21,7 +21,7 @@ type FormValues = {
 export const YouTubeForm = () => {
   const form = useForm<FormValues>({
     defaultValues: {
-      username: "test",
+      username: "",
       email: "",
       channel: "",
       social: {
@@ -43,7 +43,7 @@ export const YouTubeForm = () => {
     getValues,
     setValue,
   } = form;
-  const { errors, touchedFields, dirtyFields, isDirty } = formState;
+  const { errors, touchedFields, dirtyFields, isDirty, isValid } = formState;
 
   const { fields, append, remove } = useFieldArray({
     name: "phNumbers",
@@ -52,6 +52,10 @@ export const YouTubeForm = () => {
 
   const onSubmit = (data: FormValues) => {
     console.log(data);
+  };
+
+  const onError = (errors: FieldErrors<FormValues>) => {
+    console.log(errors);
   };
 
   useEffect(() => {
@@ -81,7 +85,10 @@ export const YouTubeForm = () => {
   return (
     <div>
       <h2>watched value : {userName}</h2>
-      <form style={{ display: "grid" }} onSubmit={handleSubmit(onSubmit)}>
+      <form
+        style={{ display: "grid" }}
+        onSubmit={handleSubmit(onSubmit, onError)}
+      >
         <div className="form-control">
           <label htmlFor="username">User Name</label>
           <input
@@ -95,7 +102,11 @@ export const YouTubeForm = () => {
         </div>
         <div className="form-control">
           <label htmlFor="email">Email</label>
-          <input type="email" id="email" {...register("email")} />
+          <input
+            type="email"
+            id="email"
+            {...register("email", { disabled: watch("username") === "" })}
+          />
         </div>
         <div className="form-control">
           <label htmlFor="channel">Channel</label>
@@ -176,7 +187,7 @@ export const YouTubeForm = () => {
             })}
           />
         </div>
-        <button>Submit</button>
+        <button disabled={!isDirty || !isValid}>Submit</button>
         <button type="button" onClick={handleGetValues}>
           Get Values
         </button>
